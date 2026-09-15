@@ -1,0 +1,49 @@
+{
+  "name": "n8n-nodes-getmulticast",
+  "version": "1.4.0",
+  "description": "n8n community node for GetMulticast — generate AI videos, publish posts, manage AI-drafted replies, and configure webhooks/RSS feeds across Instagram, Facebook, TikTok, YouTube, X, LinkedIn, Threads, Pinterest, Bluesky, and Google Business. Includes a real Trigger node with automatic webhook lifecycle management.",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "license": "MIT",
+  "homepage": "https://getmulticast.com/api-docs.html",
+  "author": {
+    "name": "CloudWeb Technologies Private Limited",
+    "email": "support@getmulticast.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Piyushpatel21/n8n-nodes-getmulticast.git"
+  },
+  "scripts": {
+    "build": "tsc && npm run copy:assets",
+    "copy:assets": "mkdir -p dist/nodes/GetMulticast dist/nodes/GetMulticastTrigger && cp nodes/GetMulticast/getmulticast.svg dist/nodes/GetMulticast/ && cp nodes/GetMulticastTrigger/getmulticast.svg dist/nodes/GetMulticastTrigger/",
+    "lint": "eslint . --ext .ts",
+    "lintfix": "eslint . --ext .ts --fix",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/GetMulticastApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/GetMulticast/GetMulticast.node.js",
+      "dist/nodes/GetMulticastTrigger/GetMulticastTrigger.node.js"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "n8n-workflow": "^1.60.0",
+    "typescript": "^5.4.0"
+  }
+}
