@@ -2,6 +2,7 @@ import type {
   IAuthenticateGeneric,
   ICredentialTestRequest,
   ICredentialType,
+  Icon,
   INodeProperties,
 } from "n8n-workflow";
 
@@ -11,6 +12,8 @@ export class GetMulticastApi implements ICredentialType {
   displayName = "GetMulticast API";
 
   documentationUrl = "https://getmulticast.com/api-docs.html";
+
+  icon: Icon = "file:getmulticast.svg";
 
   properties: INodeProperties[] = [
     {

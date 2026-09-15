@@ -6,7 +6,7 @@ import type {
   INodeType,
   INodeTypeDescription,
 } from "n8n-workflow";
-import { NodeConnectionTypes } from "n8n-workflow";
+import { NodeConnectionTypes, NodeOperationError } from "n8n-workflow";
 
 const BASE_URL = "https://getmulticast.com/api/v1";
 
@@ -30,7 +30,7 @@ export class GetMulticastTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: "GetMulticast Trigger",
     name: "getMulticastTrigger",
-    icon: "file:getmulticast.svg",
+    icon: { light: "file:getmulticast.svg", dark: "file:getmulticast.svg" },
     group: ["trigger"],
     version: 1,
     subtitle: '={{$parameter["events"].join(", ")}}',
@@ -88,7 +88,8 @@ export class GetMulticastTrigger implements INodeType {
             return false;
           }
           return true;
-        } catch {
+        } catch (error) {
+          this.logger.error("GetMulticast Trigger: checkExists failed", { error });
           return false;
         }
       },
@@ -96,7 +97,7 @@ export class GetMulticastTrigger implements INodeType {
         const webhookUrl = this.getNodeWebhookUrl("default");
         const events = this.getNodeParameter("events") as string[];
         if (!events || !events.length) {
-          throw new Error("Select at least one event for this trigger");
+          throw new NodeOperationError(this.getNode(), "Select at least one event for this trigger");
         }
         const resp = (await this.helpers.httpRequestWithAuthentication.call(this, "getMulticastApi", {
           method: "POST", url: `${BASE_URL}/webhooks`, body: { url: webhookUrl, events }, json: true,
@@ -118,9 +119,12 @@ export class GetMulticastTrigger implements INodeType {
           await this.helpers.httpRequestWithAuthentication.call(this, "getMulticastApi", {
             method: "DELETE", url: `${BASE_URL}/webhooks/${staticData.webhookId}`, json: true,
           });
-        } catch {
-          // Already gone (e.g. deleted from the GetMulticast dashboard
-          // directly) — not a reason to block deactivating the workflow.
+        } catch (error) {
+          // Logged, not rethrown: most likely already gone (e.g. deleted
+          // from the GetMulticast dashboard directly) — not a reason to
+          // block deactivating the workflow, but worth surfacing if it's
+          // actually some other failure.
+          this.logger.error("GetMulticast Trigger: webhook delete failed (continuing deactivation)", { error });
         }
         delete staticData.webhookId;
         delete staticData.webhookSecret;

@@ -8,9 +8,9 @@ auto-post feeds, all against the real, documented
 ## Install (self-hosted n8n)
 
 **Community Nodes (recommended):** n8n → Settings → Community Nodes → Install →
-enter `n8n-nodes-getmulticast` (once published to npm — see "Publishing" below).
+enter `n8n-nodes-getmulticast`. Published on npm: https://www.npmjs.com/package/n8n-nodes-getmulticast
 
-**Manual install**, if you're testing this before it's published:
+**Manual install**, for local development against this repo instead:
 ```
 cd /path/to/n8n-nodes-getmulticast
 npm install
@@ -84,21 +84,23 @@ npm run build   # tsc compile + copy node icons into dist/
 npm run lint    # ESLint against n8n's TypeScript rules
 ```
 
-**Publishing itself must happen via GitHub Actions with npm provenance** — n8n
-explicitly does not accept verified nodes published from a local machine. See
-`.github/workflows/publish.yml`: it builds, lints, runs n8n's own
-`@n8n/scan-community-package` scanner, then `npm publish --provenance` — triggered by
-pushing a `v*.*.*` git tag. Requirements before that workflow can run for real:
+**Status: published.** `n8n-nodes-getmulticast@1.4.0` is live on npm —
+https://www.npmjs.com/package/n8n-nodes-getmulticast (first publish done manually,
+2026-09-15, since npm requires an interactive OTP for a brand-new package's very
+first version even with a 2FA-bypass token; see git history for the full story).
 
-1. This package needs to live in its own **public GitHub repository** (matching the
-   `repository.url` in `package.json` — update that placeholder once the real repo
-   exists).
-2. An **`NPM_TOKEN` secret** on that GitHub repo, from an npm account with publish
-   rights to the `n8n-nodes-getmulticast` name (the name is currently unclaimed).
-3. After the first successful publish, submit the package through n8n's
-   [Creator Portal](https://docs.n8n.io/connect/create-nodes/deploy-your-node/submit-community-nodes)
-   for their review — verification is a human decision on their side, not automatic
-   just because the workflow runs clean.
+**Every future release should go through GitHub Actions with npm provenance** — n8n
+explicitly does not accept verified nodes published from a local machine going
+forward. See `.github/workflows/publish.yml`: it builds, lints, runs n8n's own
+`@n8n/scan-community-package` scanner, then `npm publish --provenance` — triggered by
+pushing a `v*.*.*` git tag. Already set up: the public GitHub repository
+(https://github.com/Piyushpatel21/n8n-nodes-getmulticast, matching `package.json`'s
+`repository.url`) and the `NPM_TOKEN` secret on it.
+
+**Remaining step:** submit the package through n8n's
+[Creator Portal](https://docs.n8n.io/connect/create-nodes/deploy-your-node/submit-community-nodes)
+for their review — verification is a human decision on n8n's side, not automatic just
+because the package is on npm and the workflow runs clean.
 
 Note: `@n8n/scan-community-package` (and n8n's own `@n8n/node-cli` scaffolding tool)
 require Node.js ≥22 — they use `isolated-vm`, which fails to build on Node 20. The

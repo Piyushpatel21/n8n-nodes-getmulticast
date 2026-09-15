@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-getmulticast",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "n8n community node for GetMulticast — generate AI videos, publish posts, manage AI-drafted replies, and configure webhooks/RSS feeds across Instagram, Facebook, TikTok, YouTube, X, LinkedIn, Threads, Pinterest, Bluesky, and Google Business. Includes a real Trigger node with automatic webhook lifecycle management.",
   "keywords": [
     "n8n-community-node-package"

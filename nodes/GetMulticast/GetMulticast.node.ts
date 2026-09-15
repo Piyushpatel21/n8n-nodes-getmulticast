@@ -5,8 +5,9 @@ import type {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  JsonObject,
 } from "n8n-workflow";
-import { NodeConnectionTypes } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes } from "n8n-workflow";
 
 const BASE_URL = "https://getmulticast.com/api/v1";
 
@@ -17,12 +18,13 @@ export class GetMulticast implements INodeType {
   description: INodeTypeDescription = {
     displayName: "GetMulticast",
     name: "getMulticast",
-    icon: "file:getmulticast.svg",
+    icon: { light: "file:getmulticast.svg", dark: "file:getmulticast.svg" },
     group: ["output"],
     version: 1,
     subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
     description: "Generate AI videos, publish posts, manage replies, and configure webhooks/RSS feeds via the GetMulticast API",
     defaults: { name: "GetMulticast" },
+    usableAsTool: true,
     inputs: [NodeConnectionTypes.Main],
     outputs: [NodeConnectionTypes.Main],
     credentials: [{ name: "getMulticastApi", required: true }],
@@ -35,7 +37,7 @@ export class GetMulticast implements INodeType {
         options: [
           { name: "Account", value: "account" },
           { name: "Comment", value: "comment" },
-          { name: "Credits", value: "credits" },
+          { name: "Credit", value: "credits" },
           { name: "Pending Reply", value: "pendingReply" },
           { name: "Post", value: "post" },
           { name: "Recycling Rule", value: "recyclingRule" },
@@ -55,14 +57,14 @@ export class GetMulticast implements INodeType {
         displayOptions: { show: { resource: ["post"] } },
         options: [
           { name: "Create (Publish Now)", value: "create", action: "Publish a post now" },
+          { name: "Delete Scheduled", value: "deleteScheduled", action: "Delete a scheduled post" },
           { name: "Get", value: "get", action: "Get one post" },
+          { name: "Get Analytics", value: "analytics", action: "Get post analytics" },
           { name: "List", value: "list", action: "List posts" },
-          { name: "Retry", value: "retry", action: "Retry a failed platform" },
-          { name: "Schedule", value: "schedule", action: "Schedule a post for later" },
           { name: "List Scheduled", value: "listScheduled", action: "List scheduled posts" },
           { name: "Reschedule", value: "reschedule", action: "Reschedule a pending post" },
-          { name: "Delete Scheduled", value: "deleteScheduled", action: "Delete a scheduled post" },
-          { name: "Get Analytics", value: "analytics", action: "Get real per-post metrics for one platform" },
+          { name: "Retry", value: "retry", action: "Retry a failed platform" },
+          { name: "Schedule", value: "schedule", action: "Schedule a post for later" },
         ],
         default: "create",
       },
@@ -90,7 +92,7 @@ export class GetMulticast implements INodeType {
         default: '{\n  "instagram": ["accountId"]\n}',
         required: true,
         displayOptions: { show: { resource: ["post"], operation: ["create", "schedule"] } },
-        description: "Platform -> array of account ids. Get account ids from the Account > List operation.",
+        description: "Platform -> array of account IDs. Get account IDs from the Account > List operation.",
       },
       {
         displayName: "Caption",
@@ -100,7 +102,7 @@ export class GetMulticast implements INodeType {
         displayOptions: { show: { resource: ["post"], operation: ["create", "schedule"] } },
       },
       {
-        displayName: "Hashtags (comma-separated)",
+        displayName: "Hashtags (Comma-Separated)",
         name: "hashtags",
         type: "string",
         default: "",
@@ -175,7 +177,9 @@ export class GetMulticast implements INodeType {
         displayName: "Limit",
         name: "limit",
         type: "number",
-        default: 25,
+        default: 50,
+        typeOptions: { minValue: 1 },
+        description: "Max number of results to return",
         displayOptions: { show: { resource: ["post"], operation: ["list", "listScheduled"] } },
       },
 
@@ -242,10 +246,10 @@ export class GetMulticast implements INodeType {
         noDataExpression: true,
         displayOptions: { show: { resource: ["pendingReply"] } },
         options: [
-          { name: "List", value: "list", action: "List the review queue" },
           { name: "Approve", value: "approve", action: "Send a pending reply" },
-          { name: "Reject", value: "reject", action: "Discard a pending reply" },
+          { name: "List", value: "list", action: "List the review queue" },
           { name: "Regenerate", value: "regenerate", action: "Ask AI to revise the draft" },
+          { name: "Reject", value: "reject", action: "Discard a pending reply" },
           { name: "Update Text", value: "updateText", action: "Overwrite the draft text" },
         ],
         default: "list",
@@ -273,7 +277,7 @@ export class GetMulticast implements INodeType {
         default: "",
         required: true,
         displayOptions: { show: { resource: ["pendingReply"], operation: ["regenerate"] } },
-        description: "e.g. make it shorter and friendlier",
+        description: "E.g. make it shorter and friendlier",
       },
       {
         displayName: "Text",
@@ -339,11 +343,11 @@ export class GetMulticast implements INodeType {
         noDataExpression: true,
         displayOptions: { show: { resource: ["rssFeed"] } },
         options: [
+          { name: "Check Now", value: "checkNow", action: "Check a feed immediately" },
           { name: "Create", value: "create", action: "Register a feed" },
+          { name: "Delete", value: "delete", action: "Delete a feed" },
           { name: "List", value: "list", action: "List feeds" },
           { name: "Update", value: "update", action: "Update a feed" },
-          { name: "Delete", value: "delete", action: "Delete a feed" },
-          { name: "Check Now", value: "checkNow", action: "Check a feed immediately" },
         ],
         default: "create",
       },
@@ -403,10 +407,10 @@ export class GetMulticast implements INodeType {
         displayOptions: { show: { resource: ["recyclingRule"] } },
         options: [
           { name: "Create", value: "create", action: "Create a recycling rule" },
-          { name: "List", value: "list", action: "List recycling rules" },
-          { name: "Update", value: "update", action: "Update a recycling rule" },
           { name: "Delete", value: "delete", action: "Delete a recycling rule" },
+          { name: "List", value: "list", action: "List recycling rules" },
           { name: "Run Now", value: "runNow", action: "Recycle immediately" },
+          { name: "Update", value: "update", action: "Update a recycling rule" },
         ],
         default: "create",
       },
@@ -417,7 +421,7 @@ export class GetMulticast implements INodeType {
         default: "",
         required: true,
         displayOptions: { show: { resource: ["recyclingRule"], operation: ["create"] } },
-        description: "A post id (from Post > List) that already published successfully",
+        description: "A post ID (from Post > List) that already published successfully",
       },
       {
         displayName: "Selections (JSON)",
@@ -440,7 +444,7 @@ export class GetMulticast implements INodeType {
         type: "boolean",
         default: false,
         displayOptions: { show: { resource: ["recyclingRule"], operation: ["create", "update"] } },
-        description: "If true, AI rewrites the caption each time so it doesn't read as an exact repeat",
+        description: "Whether AI rewrites the caption each time so it doesn't read as an exact repeat",
       },
       {
         displayName: "Rule ID",
@@ -474,9 +478,9 @@ export class GetMulticast implements INodeType {
         displayOptions: { show: { resource: ["video"] } },
         options: [
           { name: "Create", value: "create", action: "Generate a new AI video" },
-          { name: "Get", value: "get", action: "Check a video's generation status" },
-          { name: "List", value: "list", action: "List videos" },
           { name: "Delete", value: "delete", action: "Delete a video" },
+          { name: "Get", value: "get", action: "Get a video's status" },
+          { name: "List", value: "list", action: "List videos" },
         ],
         default: "create",
       },
@@ -506,7 +510,7 @@ export class GetMulticast implements INodeType {
         type: "boolean",
         default: false,
         displayOptions: { show: { resource: ["video"], operation: ["create"] } },
-        description: "Add an AI-narrated voiceover track",
+        description: "Whether to add an AI-narrated voiceover track",
       },
       {
         displayName: "Voice ID",
@@ -530,7 +534,7 @@ export class GetMulticast implements INodeType {
         type: "boolean",
         default: false,
         displayOptions: { show: { resource: ["video"], operation: ["create"] } },
-        description: "Save without generating or charging credits — generate later from the dashboard",
+        description: "Whether to save without generating or charging credits — generate later from the dashboard",
       },
       {
         displayName: "Video ID",
@@ -725,7 +729,7 @@ export class GetMulticast implements INodeType {
           returnData.push({ json: { error: (error as Error).message }, pairedItem: { item: i } });
           continue;
         }
-        throw error;
+        throw new NodeApiError(this.getNode(), error as JsonObject);
       }
     }
 
