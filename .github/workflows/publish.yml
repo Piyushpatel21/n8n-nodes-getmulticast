@@ -5,6 +5,17 @@ name: Build, scan, and publish to npm
 # provenance" — n8n won't accept a verified node published from a local
 # machine's `npm publish`. This workflow is that required path.
 #
+# Uses npm Trusted Publishing (OIDC) instead of a stored NPM_TOKEN
+# secret — switched to this 2026-09-15 after real, repeated EOTP
+# failures publishing with a granular access token that had "bypass
+# 2FA" enabled (a documented npm platform issue, not a config mistake:
+# the bypass setting didn't actually bypass the one-time-password
+# requirement for this account). Trusted Publishing has no long-lived
+# credential to leak in the first place, so this class of failure (and
+# the security risk npm's own UI warned about) doesn't apply at all.
+# Requires configuring this repo + workflow filename as a Trusted
+# Publisher on the package's npmjs.com settings page — see README.
+#
 # Triggered by pushing a version tag (e.g. v1.4.0) that matches the
 # version already bumped in package.json — deliberate manual step
 # (tag, don't auto-publish on every push to main) so a publish is
@@ -35,6 +46,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Update npm (Trusted Publishing needs a recent CLI)
+        run: npm install -g npm@latest
+
       - name: Build
         run: npm run build
 
@@ -44,7 +58,5 @@ jobs:
       - name: Scan with n8n's official community-package scanner
         run: npx --yes @n8n/scan-community-package n8n-nodes-getmulticast
 
-      - name: Publish to npm (with provenance)
+      - name: Publish to npm (Trusted Publishing + provenance)
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
