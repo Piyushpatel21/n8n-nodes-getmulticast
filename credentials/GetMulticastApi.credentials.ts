@@ -13,7 +13,7 @@ export class GetMulticastApi implements ICredentialType {
 
   documentationUrl = "https://getmulticast.com/api-docs.html";
 
-  icon: Icon = "file:getmulticast.svg";
+  icon: Icon = { light: "file:getmulticast.svg", dark: "file:getmulticast.svg" };
 
   properties: INodeProperties[] = [
     {

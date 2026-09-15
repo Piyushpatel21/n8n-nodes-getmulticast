@@ -277,7 +277,7 @@ export class GetMulticast implements INodeType {
         default: "",
         required: true,
         displayOptions: { show: { resource: ["pendingReply"], operation: ["regenerate"] } },
-        description: "E.g. make it shorter and friendlier",
+        description: "E.g. make it shorter and friendlier.",
       },
       {
         displayName: "Text",
@@ -479,7 +479,7 @@ export class GetMulticast implements INodeType {
         options: [
           { name: "Create", value: "create", action: "Generate a new AI video" },
           { name: "Delete", value: "delete", action: "Delete a video" },
-          { name: "Get", value: "get", action: "Get a video's status" },
+          { name: "Get", value: "get", action: "Get video status" },
           { name: "List", value: "list", action: "List videos" },
         ],
         default: "create",
