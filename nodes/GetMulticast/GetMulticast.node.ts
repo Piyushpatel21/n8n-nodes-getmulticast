@@ -560,7 +560,10 @@ export class GetMulticast implements INodeType {
 
     for (let i = 0; i < items.length; i++) {
       const resource = this.getNodeParameter("resource", i) as string;
-      const operation = this.getNodeParameter("operation", i) as string;
+      // Account and Credits have no "operation" field at all (each is a
+      // single action) — default to "" rather than letting
+      // getNodeParameter throw "Could not get parameter" for those two.
+      const operation = this.getNodeParameter("operation", i, "") as string;
       let method: IHttpRequestOptions["method"] = "GET";
       let path = "";
       let body: IDataObject | undefined;
